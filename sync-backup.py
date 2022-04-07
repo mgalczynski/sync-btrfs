@@ -36,7 +36,7 @@ def main():
         for snapshot in snapshots:
             if snapshot not in dest_snapshots:
                 parent_parameter = f'-p {source_dir}/{parent[1]}' if parent is not None else ''
-                command = f'sudo btrfs send {parent_parameter} {source_dir}/{snapshot[1]} | ssh {host} sudo btrfs receive {dest_dir}'
+                command = f'sudo btrfs send {parent_parameter} {source_dir}/{snapshot[1]} | pv | ssh {host} sudo btrfs receive {dest_dir}'
                 print(f'Sending {snapshot=} with {parent=} {command=}')
                 subprocess.run(command, shell=True, check=True)
 
