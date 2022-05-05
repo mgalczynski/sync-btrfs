@@ -2,29 +2,36 @@
 
 from collections import defaultdict
 import subprocess
+import re
 
 def main():
-    source_dir = '/mnt/backup/btrbk_snapshots'
+    source_dir = '/mnt/btr_pool/@/.snapshots'
     dest_dir = '/mnt/backup/btrbk_snapshots'
+    snapshot_regex = re.compile(r'(?P<key>\S*)\.(?P<datetime>\d{8}T\d{4})')
     host = 'lap'
 
 
     source_content = defaultdict(list)
     for element in subprocess.run(['ls', '-l', source_dir], stdout=subprocess.PIPE, check=True).stdout.decode().split():
-        elements = element.split('.')
-        if len(elements) != 2:
+        groups = snapshot_regex.search(element)
+        if not groups:
             continue
-        key, dt = elements
-        source_content[key].append((dt, element))
+
+
+        key = groups['key']
+        datetime = groups['datetime']
+        source_content[key].append((datetime, element))
 
 
     dest_content = defaultdict(set)
     for element in subprocess.run(['ssh', host, 'ls', '-l', dest_dir], stdout=subprocess.PIPE, check=True).stdout.decode().split():
-        elements = element.split('.')
-        if len(elements) != 2:
+        groups = snapshot_regex.search(element)
+        if not groups:
             continue
-        key, dt = elements
-        dest_content[key].add((dt, element))
+
+        key = groups['key']
+        datetime = groups['datetime']
+        dest_content[key].add((datetime, element))
 
     for k, v in source_content.items():
         source_content[k] = sorted(v)
