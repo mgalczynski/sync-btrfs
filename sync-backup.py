@@ -45,7 +45,11 @@ def main():
                 parent_parameter = f'-p {source_dir}/{parent[1]}' if parent is not None else ''
                 command = f'sudo btrfs send {parent_parameter} {source_dir}/{snapshot[1]} | pv | ssh {host} "pv -B 1G | sudo btrfs receive {dest_dir}"'
                 print(f'Sending {snapshot=} with {parent=} {command=}')
-                subprocess.run(command, shell=True, check=True)
+                try:
+                    subprocess.run(command, shell=True, check=True)
+                except:
+                    print(f'Problem with {snapshot[1]}, please delete {source_dir}/{snapshot[1]} on your target manually')
+                    raise
 
             parent = snapshot
 
