@@ -43,12 +43,12 @@ def main():
         for snapshot in snapshots:
             if snapshot not in dest_snapshots:
                 parent_parameter = f'-p {source_dir}/{parent[1]}' if parent is not None else ''
-                command = f'sudo btrfs send {parent_parameter} {source_dir}/{snapshot[1]} | pv | ssh {host} "pv -B 1G | sudo btrfs receive {dest_dir}"'
+                command = f'sudo btrfs send {parent_parameter} {source_dir}/{snapshot[1]} | pv | ssh {host} "pv -B 1G | sudo btrfs receive {dest_dir}" && sudo btrfs sub del {source_dir}/{parent[1]}'
                 print(f'Sending {snapshot=} with {parent=} {command=}')
                 try:
                     subprocess.run(command, shell=True, check=True)
                 except:
-                    print(f'Problem with {snapshot[1]}, please delete {source_dir}/{snapshot[1]} on your target manually')
+                    print(f'Problem with {snapshot[1]}, please delete {dest_dir}/{snapshot[1]} on your target manually')
                     raise
 
             parent = snapshot
