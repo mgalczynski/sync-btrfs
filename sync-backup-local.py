@@ -9,7 +9,6 @@ def main():
     source_dir = '/mnt/btr_pool/@/.snapshots'
     dest_dir = '/mnt/backup/btrbk_snapshots'
     snapshot_regex = re.compile(r'(?P<key>\S*)\.(?P<datetime>\d{8}T\d{4})')
-    host = 'lap'
 
 
     source_content = defaultdict(list)
@@ -25,7 +24,7 @@ def main():
 
 
     dest_content = defaultdict(set)
-    for element in subprocess.run(['ssh', host, 'ls', '-l', dest_dir], stdout=subprocess.PIPE, check=True).stdout.decode().split():
+    for element in subprocess.run(['ls', '-l', dest_dir], stdout=subprocess.PIPE, check=True).stdout.decode().split():
         groups = snapshot_regex.search(element)
         if not groups:
             continue
@@ -44,7 +43,7 @@ def main():
         for snapshot in snapshots:
             if snapshot not in dest_snapshots:
                 parent_parameter = f'-p {source_dir}/{parent[1]}' if parent is not None else ''
-                command = f'sudo btrfs send {parent_parameter} {source_dir}/{snapshot[1]} | pv {" ".join(sys.argv[1:])} | ssh {host} "pv -B 1G | sudo btrfs receive {dest_dir}" && sudo btrfs sub del {source_dir}/{parent[1]}'
+                command = f'sudo btrfs send {parent_parameter} {source_dir}/{snapshot[1]} | pv -B 1G {" ".join(sys.argv[1:])} sudo btrfs receive {dest_dir} && sudo btrfs sub del {source_dir}/{parent[1]}'
                 print(f'Sending {snapshot=} with {parent=} {command=}')
                 try:
                     subprocess.run(command, shell=True, check=True)
